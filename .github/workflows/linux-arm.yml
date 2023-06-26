@@ -92,7 +92,7 @@ jobs:
         RUN ./configure
         RUN make -j 10
         RUN make install
-        RUN cp -av /usr/local/lib/libSDL* /lib/x86_64-linux-gnu/
+        RUN cp -av /usr/local/lib/libSDL* /lib/aarch64-linux-gnu/
 
         WORKDIR /home/sdl-net/
         RUN wget https://www.libsdl.org/projects/SDL_net/release/SDL2_net-2.2.0.tar.gz
@@ -101,7 +101,7 @@ jobs:
         RUN ./configure
         RUN make -j 10
         RUN make install
-        RUN cp -av /usr/local/lib/libSDL* /lib/x86_64-linux-gnu/
+        RUN cp -av /usr/local/lib/libSDL* /lib/aarch64-linux-gnu/
 
         WORKDIR /home/build/
         RUN cmake --no-warn-unused-cli -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE:STRING=Release
