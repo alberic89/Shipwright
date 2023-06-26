@@ -71,53 +71,59 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: true
-    - name: Install dependencies
-      if: ${{ (matrix.os == 'ubuntu-20.04' && !vars.LINUX_COMPATIBILITY_RUNNER) || (matrix.os == 'ubuntu-22.04' && !vars.LINUX_PERFORMANCE_RUNNER) }}
+        
+    - name: Set up QEMU
+      if: ${{ matrix.arch == 'arm64' }}
+      uses: docker/setup-qemu-action@v2.1.0
+      
+    - name: Add Dockerfile
       run: |
-        sudo apt-get update
-        sudo apt-get install -y $(cat .github/workflows/apt-deps.txt)
-    - name: ccache
-      uses: hendrikmuhs/ccache-action@v1.2
-      with:
-        key: ${{ matrix.os }}-ccache
-    - name: Install latest SDL
-      if: ${{ (matrix.os == 'ubuntu-20.04' && !vars.LINUX_COMPATIBILITY_RUNNER) || (matrix.os == 'ubuntu-22.04' && !vars.LINUX_PERFORMANCE_RUNNER) }}
-      run: |
-        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        wget https://www.libsdl.org/release/SDL2-2.26.1.tar.gz
-        tar -xzf SDL2-2.26.1.tar.gz
-        cd SDL2-2.26.1
-        ./configure
-        make -j 10
-        sudo make install
-        sudo cp -av /usr/local/lib/libSDL* /lib/x86_64-linux-gnu/
-    - name: Install latest SDL_net
-      if: ${{ (matrix.os == 'ubuntu-20.04' && !vars.LINUX_COMPATIBILITY_RUNNER) || (matrix.os == 'ubuntu-22.04' && !vars.LINUX_PERFORMANCE_RUNNER) }}
-      run: |
-        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        wget https://www.libsdl.org/projects/SDL_net/release/SDL2_net-2.2.0.tar.gz
-        tar -xzf SDL2_net-2.2.0.tar.gz
-        cd SDL2_net-2.2.0
-        ./configure
-        make -j 10
-        sudo make install
-        sudo cp -av /usr/local/lib/libSDL* /lib/x86_64-linux-gnu/
+        echo "FROM debian:bullseye-slim
+
+        WORKDIR /home/build/
+
+        RUN apt update -qq
+        RUN apt install -qq -y $(cat .github/workflows/apt-deps.txt)
+
+        WORKDIR /home/sdl/
+        RUN wget https://www.libsdl.org/release/SDL2-2.26.1.tar.gz
+        RUN tar -xzf SDL2-2.26.1.tar.gz
+        RUN cd SDL2-2.26.1
+        RUN ./configure
+        RUN make -j 10
+        RUN make install
+        RUN cp -av /usr/local/lib/libSDL* /lib/x86_64-linux-gnu/
+
+        WORKDIR /home/sdl-net/
+        RUN wget https://www.libsdl.org/projects/SDL_net/release/SDL2_net-2.2.0.tar.gz
+        RUN tar -xzf SDL2_net-2.2.0.tar.gz
+        RUN cd SDL2_net-2.2.0
+        RUN ./configure
+        RUN make -j 10
+        RUN make install
+        RUN cp -av /usr/local/lib/libSDL* /lib/x86_64-linux-gnu/
+
+        WORKDIR /home/build/
+        RUN cmake --no-warn-unused-cli -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE:STRING=Release
+        RUN cmake --build build-cmake --config Release -j3
+        RUN (cd build-cmake && cpack -G External)
+        RUN mv README.md readme.txt
+        RUN mv build-cmake/*.appimage soh.appimage
+        " > Dockerfile
+ 
     - name: Download soh.otr
       uses: actions/download-artifact@v3
       with:
         name: soh.otr
-    - name: Build SoH
-      run: |
-        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        cmake --no-warn-unused-cli -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE:STRING=Release
-        cmake --build build-cmake --config Release -j3
-        (cd build-cmake && cpack -G External)
-
-        mv README.md readme.txt
-        mv build-cmake/*.appimage soh.appimage
+        
+    - name: Build the Docker Image
       env:
         CC: gcc-${{ matrix.gcc }}
         CXX: g++-${{ matrix.gcc }}
+      run: |
+        podman build . -v=`pwd`:/home/build/ --file Dockerfile --platform=linux/arm64 --jobs=`nproc` --env-host
+ 
+      
     - name: Upload build
       uses: actions/upload-artifact@v3
       with:
