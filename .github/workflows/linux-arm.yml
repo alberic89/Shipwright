@@ -1,13 +1,10 @@
-name: generate-builds
+name: generate-arm-builds
 on:
   push:
   pull_request:
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
   generate-soh-otr:
-    runs-on: ${{ (vars.LINUX_RUNNER && fromJSON(vars.LINUX_RUNNER)) || 'ubuntu-latest ' }}
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
