@@ -74,7 +74,7 @@ jobs:
       
     - name: Add Dockerfile
       run: |
-        echo "FROM debian:bullseye-slim
+        echo "FROM debian:bullseye
 
         WORKDIR /home/build/
 
