@@ -102,7 +102,7 @@ jobs:
 
         WORKDIR /home/build/
         RUN cmake --no-warn-unused-cli -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE:STRING=Release
-        RUN cmake --build build-cmake --config Release -j3
+        RUN cmake --build build-cmake --config Release -j4
         RUN (cd build-cmake && cpack -G External)
         RUN mv README.md readme.txt
         RUN mv build-cmake/*.appimage soh.appimage
@@ -118,7 +118,7 @@ jobs:
         CC: gcc-${{ matrix.gcc }}
         CXX: g++-${{ matrix.gcc }}
       run: |
-        podman build . -v=`pwd`:/home/build/ --file Dockerfile --platform=linux/arm64 --jobs=`nproc` --env-host
+        podman build . -v=`pwd`:/home/build/ --file Dockerfile --platform=linux/arm64 --jobs=`nproc`
  
       
     - name: Upload build
