@@ -84,7 +84,7 @@ jobs:
         WORKDIR /home/sdl/
         RUN wget https://www.libsdl.org/release/SDL2-2.26.1.tar.gz
         RUN tar -xzf SDL2-2.26.1.tar.gz
-        RUN cd SDL2-2.26.1
+        WORKDIR /home/sdl/SDL2-2.26.1/
         RUN ./configure
         RUN make -j 10
         RUN make install
@@ -93,7 +93,7 @@ jobs:
         WORKDIR /home/sdl-net/
         RUN wget https://www.libsdl.org/projects/SDL_net/release/SDL2_net-2.2.0.tar.gz
         RUN tar -xzf SDL2_net-2.2.0.tar.gz
-        RUN cd SDL2_net-2.2.0
+        WORKDIR /home/sdl-net/SDL2_net-2.2.0/
         RUN ./configure
         RUN make -j 10
         RUN make install
