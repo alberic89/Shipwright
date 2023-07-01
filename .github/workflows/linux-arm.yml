@@ -79,7 +79,7 @@ jobs:
         WORKDIR /home/build/
 
         RUN apt update -qq
-        RUN apt install -qq -y $(cat .github/workflows/apt-deps.txt) wget gcc g++ curl python3 cmake make lld lsb-core
+        RUN apt install -qq -y $(cat .github/workflows/apt-deps.txt) wget gcc g++ curl python3 cmake make lld lsb-release
 
         WORKDIR /home/sdl/
         RUN wget https://www.libsdl.org/release/SDL2-2.26.1.tar.gz
