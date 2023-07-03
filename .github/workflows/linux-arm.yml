@@ -109,9 +109,9 @@ jobs:
         sudo apt-get install -y -qq pigz
         mkdir sdl && cd sdl/
         wget https://www.libsdl.org/release/SDL2-2.26.1.tar.gz
-        tar -xzf SDL2-2.26.1.tar.gz --use-compress-program=pigz
+        tar -xf SDL2-2.26.1.tar.gz --use-compress-program=pigz
         wget https://www.libsdl.org/projects/SDL_net/release/SDL2_net-2.2.0.tar.gz
-        tar -xzf SDL2_net-2.2.0.tar.gz --use-compress-program=pigz
+        tar -xf SDL2_net-2.2.0.tar.gz --use-compress-program=pigz
         
     - name: Build the Docker Image
       env:
