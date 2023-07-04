@@ -115,15 +115,14 @@ jobs:
         cd linuxdeploy
         git pull origin buildotherarches
         echo "FROM debian:bullseye-slim
+        ARG ARCH="aarch64"
         RUN apt-get update -qq
         RUN apt-get install -qq -y gcovr libmagic-dev libjpeg-dev libpng-dev libboost-filesystem-dev libboost-regex-dev cimg-dev cmake build-essential libboost-dev patchelf autoconf libc-bin
-
-        RUN export ARCH=aarch64
         
         WORKDIR /home/build/
         RUN bash -ex ci/build.sh
         " > Dockerfile-linuxdeploy
-        podman build . -v=`pwd`:/home/build/ --file Dockerfile-linuxdeploy --platform=linux/arm64 --jobs=`nproc` --env=ARCH=aarch64
+        podman build . -v=`pwd`:/home/build/ --file Dockerfile-linuxdeploy --platform=linux/arm64 --jobs=`nproc`
         mkdir ../build-cmake/linuxdeploy/linuxdeploy/
         mv linuxdeploy*.AppImage* ../build-cmake/linuxdeploy/linuxdeploy-x86_64.AppImage
     
