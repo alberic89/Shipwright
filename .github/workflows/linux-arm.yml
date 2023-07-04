@@ -113,6 +113,7 @@ jobs:
     - name: Build linuxdeploy
       run: |
         cd linuxdeploy
+        git pull origin buildotherarches
         echo "FROM debian:bullseye-slim
         RUN apt-get update -qq
         RUN apt-get install -qq -y gcovr libmagic-dev libjpeg-dev libpng-dev libboost-filesystem-dev libboost-regex-dev cimg-dev cmake build-essential libboost-dev patchelf autoconf libc-bin
