@@ -74,12 +74,12 @@ jobs:
       
     - name: Add Dockerfile
       run: |
-        echo "FROM ubuntu:20.04
+        echo "FROM debian:bullseye-slim
 
         WORKDIR /home/build/
 
         RUN apt update -qq
-        RUN apt install -qq -y $(cat .github/workflows/apt-deps.txt) wget gcc g++ curl python3 cmake make lld lsb-release
+        RUN apt install -qq -y $(cat .github/workflows/apt-deps.txt) gcc g++ curl python3 cmake make lld lsb-release
 
         WORKDIR /home/build/sdl/SDL2-2.26.1/
         RUN ./configure
@@ -91,17 +91,40 @@ jobs:
         RUN ./configure
         RUN make -j 4
         RUN make install -j 4
-        RUN cp -av /usr/local/lib/libSDL* /lib/aarch64-linux-gnu/
+        RUN cp -av /usr/local/lib/libSDL* /lib/aarch64-linux-gnu/  
 
         WORKDIR /home/build/
         RUN cmake --no-warn-unused-cli -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE:STRING=Release
         RUN cmake --build build-cmake --config Release -j4
+        
+        WORKDIR /home/build/build-cmake/
+        RUN cpack -G External
         " > Dockerfile
  
     - name: Download soh.otr
       uses: actions/download-artifact@v3
       with:
         name: soh.otr
+    
+    - name: Download linuxdeploy
+      run: |
+        git clone --recurse-submodules --depth=1 https://github.com/sithlord48/linuxdeploy
+        
+    - name: Build linuxdeploy
+      run: |
+        cd linuxdeploy
+        echo "FROM debian:bullseye-slim
+        RUN apt-get update -qq
+        RUN apt-get install -qq -y gcovr libmagic-dev libjpeg-dev libpng-dev libboost-filesystem-dev libboost-regex-dev cimg-dev cmake build-essential libboost-dev patchelf autoconf libc-bin
+
+        RUN export ARCH=aarch64
+        
+        WORKDIR /home/build/
+        RUN bash -ex ci/build.sh
+        " > Dockerfile-linuxdeploy
+        podman build . -v=`pwd`:/home/build/ --file Dockerfile-linuxdeploy --platform=linux/arm64 --jobs=`nproc`
+        mkdir ../build-cmake/linuxdeploy/linuxdeploy/
+        mv linuxdeploy*.AppImage* ../build-cmake/linuxdeploy/linuxdeploy-x86_64.AppImage
     
     - name: Prepare SDL Builds
       run: |
@@ -119,11 +142,6 @@ jobs:
         CXX: g++-${{ matrix.gcc }}
       run: |
         podman build . -v=`pwd`:/home/build/ --file Dockerfile --platform=linux/arm64 --jobs=`nproc`
- 
-    - name: Pack AppImage
-      run: |
-        cd build-cmake/
-        cpack -G External
         
     - name: Prepare artifact for upload
       run: |
