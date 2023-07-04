@@ -117,7 +117,7 @@ jobs:
         echo "FROM debian:bullseye-slim
         ARG ARCH="aarch64"
         RUN apt-get update -qq
-        RUN apt-get install -qq -y gcovr libmagic-dev libjpeg-dev libpng-dev libboost-filesystem-dev libboost-regex-dev cimg-dev cmake build-essential libboost-dev patchelf autoconf libc-bin
+        RUN apt-get install -qq -y gcovr libmagic-dev libjpeg-dev libpng-dev libboost-filesystem-dev libboost-regex-dev cimg-dev cmake build-essential libboost-dev patchelf autoconf libc-bin git wget ccache
         
         WORKDIR /home/build/
         RUN bash -ex ci/build.sh
